@@ -1,85 +1,51 @@
 import { getLinesFromInput } from '../utils'
 
-const abcArr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
-const abcMap = Object.fromEntries(
-  abcArr.map((letter, index) => [letter, index + 1]),
-)
-
-const getCommonItemsFromCompartments = (input: string[]) => {
-  return input.reduce(
-    (acc, rucksack) => {
-      const compartment1 = new Set(
-        rucksack.slice(0, rucksack.length / 2).split(''),
-      )
-      const compartment2 = new Set(
-        rucksack.slice(rucksack.length / 2, rucksack.length).split(''),
-      )
-
-      acc.push(
-        abcArr.reduce((acc2, letter) => {
-          if (
-            acc2.length < 1 &&
-            compartment1.has(letter) &&
-            compartment2.has(letter)
-          ) {
-            acc2 += letter
-          }
-          return acc2
-        }, ''),
-      )
-      return acc
-    },
-    [''],
-  )
+const getPairsToSectionArr = (lines: string[]) => {
+  return lines.reduce((acc, line) => {
+    const elves = line.split(',')
+    const elf1 = elves[0].split('-').map((value) => Number(value))
+    const elf2 = elves[1].split('-').map((value) => Number(value))
+    acc.push([
+      { start: elf1[0], end: elf1[1] },
+      { start: elf2[0], end: elf2[1] },
+    ])
+    return acc
+  }, [])
 }
 
-const getCommonFromGroup = (group: Set<string>[]) => {
-  return abcArr.reduce((acc2, letter) => {
+export const day4part1 = (input?: string[]) => {
+  const lines = getLinesFromInput('./day4/input.txt', input)
+  const pairsToSectionArr = getPairsToSectionArr(lines).filter((pair) => Object.keys(pair).length > 0)
+  return pairsToSectionArr.reduce((acc, pair) => {
+    const range1 = pair[0]
+    const range2 = pair[1]
+
     if (
-      acc2.length < 1 &&
-      group[0].has(letter) &&
-      group[1].has(letter) &&
-      group[2].has(letter)
+      (range1.start <= range2.start && range1.end >= range2.end) ||
+      (range2.start <= range1.start && range2.end >= range1.end)
     ) {
-      acc2 += letter
+      console.log({ elf1: range1, elf2: range2 })
+      acc += 1
     }
-    return acc2
-  }, '')
-}
-
-const getCommonItemsFromGroups = (input: string[]) => {
-  let group: Set<string>[] = []
-  return input.reduce(
-    (acc, line) => {
-      group.push(new Set(line.split('')))
-      if (group.length === 3) {
-        acc.push(getCommonFromGroup(group))
-        group = []
-      }
-      return acc
-    },
-    [''],
-  )
-}
-
-export const day3part1 = (input?: string[]) => {
-  const lines = getLinesFromInput('./day3/input.txt', input)
-  const commonItems = getCommonItemsFromCompartments(lines)
-    .filter((item) => item !== '')
-    .map((item) => abcMap[`${item}`])
-  return commonItems.reduce((acc, item) => {
-    acc += item
     return acc
   }, 0)
 }
 
-export const day3part2 = (input?: string[]) => {
-  const lines = getLinesFromInput('./day3/input.txt', input)
-  const commonItems = getCommonItemsFromGroups(lines)
-    .filter((item) => item !== '')
-    .map((item) => abcMap[`${item}`])
-  return commonItems.reduce((acc, item) => {
-    acc += item
+export const day4part2 = (input?: string[]) => {
+  const lines = getLinesFromInput('./day4/input.txt', input)
+  const pairsToSectionArr = getPairsToSectionArr(lines).filter((pair) => Object.keys(pair).length > 0)
+  return pairsToSectionArr.reduce((acc, pair) => {
+    const range1 = pair[0]
+    const range2 = pair[1]
+
+    if (
+      (range1.start <= range2.start && range1.end >= range2.end) ||
+      (range2.start <= range1.start && range2.end >= range1.end) ||
+      (range1.start >= range2.start && range1.start <= range2.end) ||
+      (range2.start >= range1.start && range2.start <= range1.end)
+    ) {
+      acc += 1
+    }
     return acc
   }, 0)
 }
